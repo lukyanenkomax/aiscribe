@@ -6,6 +6,7 @@ import json
 import re
 import shutil
 import subprocess
+import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -197,18 +198,30 @@ def fetch_subtitles(url: str, workdir: Path, progress_cb=None) -> dict | None:
         candidates = list(manual) or list(auto)
 
     for lang in candidates:
-        if progress_cb:
-            progress_cb(None, f"Субтитры: загрузка ({lang})...")
         # запрашиваем ровно один язык: yt-dlp падает целиком, если не скачать
-        # хотя бы один из запрошенных (например, HTTP 429 на timedtext)
+        # хотя бы один из запрошенных (например, HTTP 429 на timedtext).
+        # YouTube периодически отдаёт 429 — ждём и повторяем, прежде чем
+        # сдаться и перейти к обычной транскрибации.
         dl_opts = {**opts, "writesubtitles": True, "writeautomaticsub": True,
                    "subtitleslangs": [lang], "subtitlesformat": "vtt/best",
                    "outtmpl": str(workdir / "_subs.%(ext)s")}
-        try:
-            with yt_dlp.YoutubeDL(dl_opts) as ydl:
-                ydl.extract_info(url, download=True)
-        except Exception:
-            continue
+        for attempt in range(3):
+            if progress_cb:
+                msg = f"Субтитры: загрузка ({lang})..."
+                if attempt:
+                    msg = (f"Субтитры: YouTube ограничил запросы (429) — "
+                           f"повтор через {10 * attempt} с…")
+                progress_cb(None, msg)
+            if attempt:
+                time.sleep(10 * attempt)
+            try:
+                with yt_dlp.YoutubeDL(dl_opts) as ydl:
+                    ydl.extract_info(url, download=True)
+                break
+            except Exception as e:
+                if "429" in str(e) and attempt < 2:
+                    continue  # подождём и повторим
+                break  # субтитров нет / прочая ошибка — следующий язык
         files = [p for p in workdir.glob("_subs.*") if p.suffix in (".vtt", ".srt")]
         if not files:
             continue
