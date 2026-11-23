@@ -1,0 +1,21 @@
+# Задачи и результаты (аудио, транскрипты, изложения) — не коммитим
+jobs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Локальные временные файлы и служебные папки IDE
+.screenshots/
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
