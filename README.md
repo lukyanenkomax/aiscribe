@@ -42,8 +42,8 @@ Streamlit-сервис для транскрибации аудио и виде�
 ### Windows
 
 ```bat
-git clone https://github.com/USER/REPO.git
-cd REPO
+git clone https://github.com/lukyanenkomax/aiscribe.git
+cd aiscribe
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
@@ -52,8 +52,8 @@ pip install -r requirements.txt
 ### macOS / Linux
 
 ```bash
-git clone https://github.com/USER/REPO.git
-cd REPO
+git clone https://github.com/lukyanenkomax/aiscribe.git
+cd aiscribe
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
